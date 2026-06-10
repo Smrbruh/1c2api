@@ -1,5 +1,10 @@
 # 1C2API
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Version](https://img.shields.io/badge/version-v0.1-brightgreen.svg)](https://github.com/Smrbruh/1c2api/releases/tag/v0.1)
+[![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)]()
+
 **Конфигурация 1С → Современный API-контракт**
 
 > Парсит EDT-выгрузку 1С и автоматически генерирует OpenAPI, Postman коллекцию, Markdown документацию и Redoc UI.
