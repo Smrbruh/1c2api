@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Catalog xmlns="http://v8.1c.ru/8.2/mdclasses">
+    <Name>Номенклатура</Name>
+    <Synonym>
+        <ru>Номенклатура</ru>
+    </Synonym>
+    <Attributes>
+        <Attribute>
+            <Name>Наименование</Name>
+            <Synonym>
+                <ru>Наименование</ru>
+            </Synonym>
+            <AttributeType>
+                <Type>String</Type>
+            </AttributeType>
+            <FillChecking>FillIfNotFilled</FillChecking>
+        </Attribute>
+        <Attribute>
+            <Name>Артикул</Name>
+            <Synonym>
+                <ru>Артикул</ru>
+            </Synonym>
+            <AttributeType>
+                <Type>String</Type>
+            </AttributeType>
+        </Attribute>
+        <Attribute>
+            <Name>Цена</Name>
+            <Synonym>
+                <ru>Цена</ru>
+            </Synonym>
+            <AttributeType>
+                <Type>Number</Type>
+            </AttributeType>
+        </Attribute>
+    </Attributes>
+</Catalog>
