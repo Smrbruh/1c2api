@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CatalogObject xmlns="http://v8.1c.ru/8.2/mdclasses">
+  <Name>Номенклатура</Name>
+  <Synonym>
+    <ru>Номенклатура</ru>
+  </Synonym>
+  <Comment>Справочник товарной номенклатуры</Comment>
+  <Attributes>
+    <Name>Артикул</Name>
+    <Comment>Артикул товара</Comment>
+    <FillChecking>FillIfNotFilled</FillChecking>
+    <Type>
+      <TypeSet>
+        <Type>String</Type>
+        <StringQualifiers>
+          <Length>50</Length>
+        </StringQualifiers>
+      </TypeSet>
+    </Type>
+  </Attributes>
+  <Attributes>
+    <Name>Цена</Name>
+    <Comment>Цена продажи</Comment>
+    <FillChecking>DontFill</FillChecking>
+    <Type>
+      <TypeSet>
+        <Type>Number</Type>
+        <NumberQualifiers>
+          <Digits>15</Digits>
+          <FractionDigits>2</FractionDigits>
+        </NumberQualifiers>
+      </TypeSet>
+    </Type>
+  </Attributes>
+  <Attributes>
+    <Name>Активен</Name>
+    <Comment>Признак активности</Comment>
+    <FillChecking>DontFill</FillChecking>
+    <Type>
+      <TypeSet>
+        <Type>Boolean</Type>
+      </TypeSet>
+    </Type>
+  </Attributes>
+</CatalogObject>
