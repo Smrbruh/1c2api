@@ -121,8 +121,8 @@ def _detect_source(config_path: Path) -> str:
 def _generate_openapi(cfg: Configuration, output_dir: Path) -> Path:
     """Сгенерировать OpenAPI 3.0.3 YAML через SchemaBuilder + OpenAPIGenerator."""
     import yaml
-    from parser_1c.generator_schema.builder import SchemaBuilder
-    from parser_1c.generator_openapi.generator import OpenAPIGenerator
+    from generator_schema.builder import SchemaBuilder
+    from generator_openapi.generator import OpenAPIGenerator
 
     schemas  = SchemaBuilder(cfg).build()
     yaml_str = OpenAPIGenerator(cfg, schemas).generate()
