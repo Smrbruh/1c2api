@@ -326,13 +326,17 @@ class EDTParser(BaseParser):
         return ""
 
     def _extract_attributes(self, parent: etree._Element) -> list[Field]:
-        """Extract all ``<Attributes>`` children of *parent* as :class:`Field` objects."""
+        """Extract all <Attribute> children from <Attributes>."""
         fields: list[Field] = []
         ns = {"md": NS}
-        for attr_el in parent.xpath("md:Attributes", namespaces=ns):
+        attrs_container = parent.xpath(".//md:Attributes", namespaces=ns)
+        if not attrs_container:
+            return fields
+        for attr_el in attrs_container[0].xpath(".//md:Attribute", namespaces=ns):
             field = self._parse_attribute(attr_el)
             if field is not None:
                 fields.append(field)
+    
         return fields
 
     def _parse_attribute(self, attr_el: etree._Element) -> Optional[Field]:
