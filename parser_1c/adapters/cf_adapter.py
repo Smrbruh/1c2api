@@ -193,7 +193,7 @@ class CFAdapter(BaseParser):
             output_dir: Папка для EDT XML выгрузки (существующая или будет создана).
         """
         # Уникальное имя temp_db — исключает коллизии при параллельных запусках
-        temp_db = cf_path.parent / f"_1c2api_tmpdb_{uuid.uuid4().hex[:8]}"
+        temp_db = output_dir / f"_1c2api_tmpdb_{uuid.uuid4().hex[:8]}"
         temp_db.mkdir(parents=True, exist_ok=True)
         logger.debug("temp_db создан: %s", temp_db)
 
