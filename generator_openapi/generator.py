@@ -41,7 +41,7 @@ from typing import Any
 
 import yaml
 
-from parser_1c.generator_schema.builder import JsonSchema
+from generator_schema.builder import JsonSchema
 from parser_1c.models import Configuration
 
 logger = logging.getLogger(__name__)
@@ -328,7 +328,7 @@ class OpenAPIGenerator:
 
     Usage::
 
-        from parser_1c.generator_schema.builder import SchemaBuilder
+        from generator_schema.builder import SchemaBuilder
         from parser_1c.generator_openapi.generator import OpenAPIGenerator
 
         schemas  = SchemaBuilder(configuration).build()
