@@ -146,7 +146,7 @@ OpenAPI Postman Markdown Redoc
 
 ## Лицензия
 
-MIT
+MIT — делай что хочешь, но не убирай атрибуцию.
 
 ---
 
