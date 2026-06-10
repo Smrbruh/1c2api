@@ -32,6 +32,7 @@ import re
 import uuid
 from copy import deepcopy
 from typing import Any
+from parser_1c.openapi_utils import deref, example_from_schema, collect_operations
 
 logger = logging.getLogger(__name__)
 
@@ -292,7 +293,9 @@ def _build_request(
         json_content = content.get("application/json", {})
         if json_content:
             body_schema = _deref(json_content.get("schema", {}), spec)
-            example_data = _example_from_schema(body_schema, spec)
+            example_data = example_from_schema(body_schema, spec)
+            if example_data is None:
+                example_data = {}
 
             import json
             headers.append({
@@ -349,7 +352,10 @@ def _build_example_response(
     body = ""
     if json_content:
         schema = _deref(json_content.get("schema", {}), spec)
-        body = json.dumps(_example_from_schema(schema, spec), ensure_ascii=False, indent=2)
+        ex_data = example_from_schema(schema, spec)
+        if ex_data is None:
+            ex_data = {}
+        body = json.dumps(ex_data, ensure_ascii=False, indent=2)
 
     return {
         "name": f"{status_code} — {response_obj.get('description', '')}",
