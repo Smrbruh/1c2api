@@ -21,8 +21,6 @@ Markdown-документ в стиле GitHub-совместимого API Refe
   - Ответы (таблица статус/описание + JSON-примеры)
 ---
 *Сгенерировано 1C2API*
-
-Все ``$ref`` разрешаются через :func:`~parser_1c.generator_postman.generator._deref`.
 """
 
 from __future__ import annotations
@@ -32,12 +30,7 @@ import logging
 import re
 from typing import Any
 
-# Переиспользуем $ref resolver и example builder из postman-генератора
-from parser_1c.generator_postman.generator import (
-    _collect_operations,
-    _deref,
-    _example_from_schema,
-)
+from parser_1c.openapi_utils import collect_operations, deref, example_from_schema
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +77,12 @@ def _type_label(schema: OADict) -> str:
     """Кратко описать тип JSON Schema: 'string (uuid)', 'array[object]' и т.п."""
     if not schema:
         return "any"
+    
+    # Обработка allOf
+    if "allOf" in schema:
+        first = schema["allOf"][0] if schema["allOf"] else {}
+        return _type_label(first)
+    
     t = schema.get("type", "")
     fmt = schema.get("format", "")
     ref = schema.get("$ref", "")
@@ -105,7 +104,7 @@ def _type_label(schema: OADict) -> str:
 
 def _render_schema_table(schema: OADict, spec: OADict) -> str:
     """Отрендерить таблицу свойств JSON Schema."""
-    resolved = _deref(schema, spec)
+    resolved = deref(schema, spec)
     props = resolved.get("properties", {})
     required = set(resolved.get("required", []))
 
@@ -117,7 +116,7 @@ def _render_schema_table(schema: OADict, spec: OADict) -> str:
         "|------|-----|:-----:|----------|",
     ]
     for name, prop in props.items():
-        resolved_prop = _deref(prop, spec) if "$ref" in prop else prop
+        resolved_prop = deref(prop, spec) if "$ref" in prop else prop
         type_str = _type_label(resolved_prop)
         req = "✓" if name in required else ""
         desc = _md_escape(resolved_prop.get("description") or resolved_prop.get("title") or "")
@@ -141,11 +140,11 @@ def _render_params_table(params: list[OADict], spec: OADict) -> str:
         "|----------|-----|-----|:-----:|-----------|----------|",
     ]
     for p in params:
-        resolved = _deref(p, spec) if "$ref" in p else p
+        resolved = deref(p, spec) if "$ref" in p else p
         name = resolved.get("name", "?")
         location = resolved.get("in", "")
         schema = resolved.get("schema", {})
-        type_str = _type_label(_deref(schema, spec) if "$ref" in schema else schema)
+        type_str = _type_label(deref(schema, spec) if "$ref" in schema else schema)
         required = "✓" if resolved.get("required") else ""
         default = _md_escape(str(schema.get("default", "")))
         desc = _md_escape(resolved.get("description", ""))
@@ -169,7 +168,7 @@ def _render_request_body(req_body: OADict, spec: OADict) -> str:
     if not json_content:
         return ""
 
-    schema = _deref(json_content.get("schema", {}), spec)
+    schema = deref(json_content.get("schema", {}), spec)
     lines: list[str] = [
         "",
         "**Тело запроса** (`application/json`)",
@@ -180,7 +179,11 @@ def _render_request_body(req_body: OADict, spec: OADict) -> str:
     lines.append(_render_schema_table(schema, spec))
 
     # JSON пример
-    example = _example_from_schema(schema, spec)
+    example_data = example_from_schema(schema, spec)
+    if example_data is None:
+        example_data = {}
+    example = example_data
+    
     lines += [
         "**Пример:**",
         "",
@@ -207,7 +210,7 @@ def _render_responses(responses: OADict, spec: OADict) -> str:
         "|-----|----------|",
     ]
     for code, resp_obj in sorted(responses.items()):
-        resolved = _deref(resp_obj, spec) if "$ref" in resp_obj else resp_obj
+        resolved = deref(resp_obj, spec) if "$ref" in resp_obj else resp_obj
         desc = _md_escape(resolved.get("description", ""))
         lines.append(f"| `{code}` | {desc} |")
 
@@ -217,15 +220,17 @@ def _render_responses(responses: OADict, spec: OADict) -> str:
     for code, resp_obj in sorted(responses.items()):
         if not str(code).startswith("2"):
             continue
-        resolved = _deref(resp_obj, spec) if "$ref" in resp_obj else resp_obj
+        resolved = deref(resp_obj, spec) if "$ref" in resp_obj else resp_obj
         content = resolved.get("content", {})
         json_content = content.get("application/json", {})
         if not json_content:
             continue
-        schema = _deref(json_content.get("schema", {}), spec)
-        example = _example_from_schema(schema, spec)
-        if example is None:
-            continue
+        schema = deref(json_content.get("schema", {}), spec)
+        example_data = example_from_schema(schema, spec)
+        if example_data is None:
+            example_data = {}
+        example = example_data
+        
         lines += [
             f"<details><summary>Пример ответа {code}</summary>",
             "",
@@ -330,7 +335,7 @@ class MarkdownGenerator:
 
     def _render_toc(self) -> str:
         """Автоматически сгенерировать содержание."""
-        grouped = _collect_operations(self._spec)
+        grouped = collect_operations(self._spec)
         tag_order = [t["name"] for t in self._spec.get("tags", [])]
         for tag in grouped:
             if tag not in tag_order:
@@ -364,8 +369,8 @@ class MarkdownGenerator:
 
         for name, schema in schemas.items():
             if name == "Error":
-                continue  # выносим Error в конец
-            resolved = _deref(schema, self._spec)
+                continue
+            resolved = deref(schema, self._spec)
             title = resolved.get("title") or name
             desc  = resolved.get("description", "")
             lines += [
@@ -376,9 +381,8 @@ class MarkdownGenerator:
                 _render_schema_table(resolved, self._spec),
             ]
 
-        # Error schema последней
         if "Error" in schemas:
-            resolved = _deref(schemas["Error"], self._spec)
+            resolved = deref(schemas["Error"], self._spec)
             lines += [
                 "### `Error` — Стандартная ошибка",
                 "",
@@ -389,7 +393,7 @@ class MarkdownGenerator:
 
     def _render_operations(self) -> str:
         """Основная секция: операции, сгруппированные по тегам."""
-        grouped = _collect_operations(self._spec)
+        grouped = collect_operations(self._spec)
         tag_order = [t["name"] for t in self._spec.get("tags", [])]
         for tag in grouped:
             if tag not in tag_order:
@@ -431,7 +435,6 @@ class MarkdownGenerator:
         desc    = operation.get("description", "")
         op_id   = operation.get("operationId", "")
 
-        # Заголовок
         anchor = _anchor(f"{method}-{path}")
         if self._include_badges:
             badge = _METHOD_BADGE.get(method_upper, method_upper)
@@ -452,7 +455,6 @@ class MarkdownGenerator:
         if desc:
             lines.append(f"\n{desc}")
 
-        # Параметры
         all_params_raw = (
             list(path_item.get("parameters", []))
             + list(operation.get("parameters", []))
@@ -465,12 +467,10 @@ class MarkdownGenerator:
                 _render_params_table(all_params_raw, self._spec),
             ]
 
-        # Тело запроса
         req_body = operation.get("requestBody", {})
         if req_body:
             lines.append(_render_request_body(req_body, self._spec))
 
-        # Ответы
         responses = operation.get("responses", {})
         if responses:
             lines.append(_render_responses(responses, self._spec))
