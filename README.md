@@ -157,3 +157,7 @@ MIT — делай что хочешь, но не убирай атрибуци�
 [Issues](https://github.com/Smrbruh/1c2api/issues) · [Smrbruh](https://github.com/Smrbruh)
 
 </div>
+
+---
+
+Bugs were added and deleted
